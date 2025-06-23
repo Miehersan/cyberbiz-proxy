@@ -1,8 +1,7 @@
-console.log('Using token =', TOKEN && TOKEN.substring(0,10) + '…');
-
 import 'dotenv/config';
 
 const TOKEN = process.env.CYBERBIZ_TOKEN;
+console.log('Using token =', TOKEN && TOKEN.substring(0,10) + '…');
 
 export default async function handler(req, res) {
   // CORS
