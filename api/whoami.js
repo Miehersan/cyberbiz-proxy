@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // 1. 拿 customer_id
   const customerId = req.query.customer_id;
   if (!customerId) {
     res.status(400).json({ error: '請提供 customer_id' });
@@ -7,32 +6,39 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 2. 呼叫 Cyberbiz API
+    // 呼叫 Cyberbiz API
     const apiRes = await fetch(
-      `https://app-store-api.cyberbiz.io/v2/customers/${customerId}`,
+      `https://app-store-api.cyberbiz.io/v1/customers?customer_id=${customerId}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.CYBERBIZ_TOKEN}`,
-          Accept: 'application/json'
-        }
+          Accept: 'application/json',
+        },
       }
     );
+
     if (!apiRes.ok) {
-      const msg = await apiRes.text();
-      res.status(apiRes.status).json({ error: msg });
+      const text = await apiRes.text();
+      res.status(apiRes.status).json({ error: text });
       return;
     }
-    const { customer } = await apiRes.json();
 
-    // 3. 解析 tags
-    const tags = customer.tags
-      ? customer.tags.split(',').map(t => t.trim())
+    // 解析回傳 JSON （陣列）
+    const data = await apiRes.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      res.status(404).json({ error: '找不到此會員資料' });
+      return;
+    }
+
+    const customer = data[0];
+    // customer.tags 是 [ { name: '...' }, ... ]
+    const tags = Array.isArray(customer.tags)
+      ? customer.tags.map((t) => t.name).filter(Boolean)
       : [];
 
-    // 4. 回傳
     res.status(200).json({ tags });
   } catch (err) {
-    console.error(err);
+    console.error('whoami error:', err);
     res.status(500).json({ error: '伺服器內部錯誤' });
   }
 }
