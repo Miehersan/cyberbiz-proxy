@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 export default async function handler(req, res) {
   // 1. 拿 customer_id
   const customerId = req.query.customer_id;
