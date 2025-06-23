@@ -1,7 +1,11 @@
 export default async function handler(req, res) {
-  const customerId = req.query.customer_id;
-  if (!customerId) {
-    res.status(400).json({ error: '請提供 customer_id' });
+  // 允许来自任意来源的浏览器请求
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  // 如果你页面 JS 里有自定义 headers，也可以：
+  res.setHeader('Access-Control-Allow-Headers', '*');
+  // 若要让浏览器先发 OPTIONS 预检，还需要：
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
     return;
   }
 
