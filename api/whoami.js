@@ -34,8 +34,11 @@ export default async function handler(req, res) {
   const signature = hmac.digest('base64');
 
   // 4. 組 Authorization header
-  const authorization = 
-    hmac username="${USERNAME}", algorithm="hmac-sha256", headers="x-date request-line", signature="${signature}";
+  const authorization =
+  `hmac username="${USERNAME}", algorithm="hmac-sha256", headers="x-date request-line", signature="${signature}"`;
+
+　console.log('sigStr =', sigStr);  
+  console.log('Authorization header =', authorization);  
 
   try {
     // 5. 呼叫官方 API
