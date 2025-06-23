@@ -1,22 +1,19 @@
-import crypto from 'crypto';
+// whoami.js
+require('dotenv').config();
+const crypto = require('crypto');
 
-// 你的 username/secret，部署到 Vercel 後在 Dashboard 裡設定為 Environment Variables
-const USERNAME = process.env.CYBERBIZ_USERNAME;
-const SECRET   = process.env.CYBERBIZ_SECRET;
-
-export default async function handler(req, res) {
-  // --- CORS 全部放行 ---
+module.exports = async (req, res) => {
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   if (req.method === 'OPTIONS') return res.status(204).end();
 
-  // Debug
   const customerId = req.query.customer_id;
   console.log('Customer ID =', customerId);
-  if (!customerId) {
-    return res.status(400).json({ error: '請提供 customer_id' });
-  }
+  if (!customerId) return res.status(400).json({ error: '請提供 customer_id' });
+
+};
 
   // 1. 準備 HMAC 所需的 parts
   const httpMethod    = 'GET';
