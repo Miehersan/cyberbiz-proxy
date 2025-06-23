@@ -1,16 +1,14 @@
-// api/whoami.js
 import 'dotenv/config';
 
 const TOKEN = process.env.CYBERBIZ_TOKEN;
 
 export default async function handler(req, res) {
-  // CORS 放行
+  // CORS
   res.setHeader('Access-Control-Allow-Origin',  '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   if (req.method === 'OPTIONS') return res.status(204).end();
 
-  // 1. 取得 customer_id
   const customerId = req.query.customer_id;
   console.log('Customer ID =', customerId);
   if (!customerId) {
@@ -18,7 +16,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 2. 呼叫 v2 API
     const apiRes = await fetch(
       `https://app-store-api.cyberbiz.io/v2/customers/${customerId}`,
       {
@@ -28,26 +25,26 @@ export default async function handler(req, res) {
         }
       }
     );
-
     if (!apiRes.ok) {
       const text = await apiRes.text();
-      console.error('v2 API 非 200 回應:', text);
+      console.error('v2 API error:', text);
       return res.status(apiRes.status).json({ error: text });
     }
 
-    // 3. 解析回傳 JSON
+    // 解析原始回傳
     const data = await apiRes.json();
     console.log('v2 raw response:', data);
 
-    // 4. 空值檢查
-    if (!data.customer) {
-      console.warn(`未找到 ID=${customerId} 的會員資料`);
+    // 兼容 data.customer 與 data 自身就是 customer 兩種情境
+    const customer = data.customer || data;
+    if (!customer || !customer.tags) {
+      console.warn(`未找到 ID=${customerId} 的會員或 tags`);
       return res.status(404).json({ error: '找不到此會員資料' });
     }
 
-    // 5. 取出 tags
-    const tags = Array.isArray(data.customer.tags)
-      ? data.customer.tags.map(t => t.name).filter(Boolean)
+    // 取出 tags 名稱
+    const tags = Array.isArray(customer.tags)
+      ? customer.tags.map(t => t.name).filter(Boolean)
       : [];
 
     console.log('Tags =', tags);
